@@ -85,7 +85,11 @@
 <section id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h2>
 <ul class="simple">
-<li><p>TODO</p></li>
+<li><p>Given any two versions of a package, returns the list of changed files with the count of loc_added and loc_removed in each file.</p></li>
+<li><p>Covers eight ecosystems, namely Cargo, Composer, Go, Maven, npm, NuGet, pip, and RubyGems.</p></li>
+<li><p>For Cargo, Composer, Maven, npm, pip, and RubyGems, version-differ downloads source code for a version of a package directly from the respective package registries to measure the diff.</p></li>
+<li><p>For Go and NuGet, it clones the source code repository, applies some heuristics to detect package specific files, and measures the diff.</p></li>
+<li><p>diffing is performed using native git-diff, ignores black lines (does not ignore comments).</p></li>
 </ul>
 </section>
 <section id="installation">
