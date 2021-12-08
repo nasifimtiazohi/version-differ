@@ -9,7 +9,6 @@ from zipfile import ZipFile
 import tarfile
 from pygit2 import init_repository, Signature
 from time import time
-import pydriller
 import tempfile
 from git import Repo
 import re
@@ -378,28 +377,6 @@ def setup_remote(repo, url):
     remote = repo.remotes[remote_name]
     remote.connect()
     remote.fetch()
-
-
-def get_diff_stats_from_pydriller(repo_path, commit_a, commit_b):
-    files = {}
-
-    for commit in pydriller.Repository(
-        repo_path, from_commit=commit_a, to_commit=commit_b, only_no_merge=True
-    ).traverse_commits():
-
-        for m in commit.modified_files:
-            file = m.new_path
-            if not file:
-                file = m.old_path
-            assert file
-
-            if file not in files:
-                files[file] = {"loc_added": 0, "loc_removed": 0}
-
-            files[file]["loc_added"] += m.added_lines
-            files[file]["loc_removed"] += m.deleted_lines
-
-    return files
 
 
 def get_diff_stats_from_git_diff(uni_diff_text):
