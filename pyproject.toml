@@ -23,7 +23,7 @@ classifiers = [
 python = "^3.6.1"
 click = "^8.0.0"
 rich = "^10.3.0"
-PyYAML = "^5.4.1"
+PyYAML = ">=5.4.1,<7.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.3"
