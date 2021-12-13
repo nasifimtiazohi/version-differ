@@ -91,8 +91,8 @@ def test_go():
 
 def get_sha_stat(output):
     return (
-        output["metadata_info"]["old_version_git_sha"],
-        output["metadata_info"]["new_version_git_sha"],
+        output.old_version_git_sha,
+        output.new_version_git_sha,
     )
 
 
@@ -100,15 +100,13 @@ def get_files_loc_stat(output):
     # for k in files.keys():
     #     print(k, "\n::::::::::::::::::::::::::::::::::::::::\n", files[k])
 
-    # for files only renamed,
-    # need to filter out files with zero loc change
-    files = output["diff"]
+    files = output.diff
     changed_files = len(files)
-    lines_added = lines_deleted = 0
+    lines_added = lines_removed = 0
     for k in files.keys():
-        lines_added += files[k]["loc_added"]
-        lines_deleted += files[k]["loc_removed"]
-    return changed_files, lines_added, lines_deleted
+        lines_added += files[k].loc_added
+        lines_removed += files[k].loc_removed
+    return changed_files, lines_added, lines_removed
 
 
 def test_composer():
@@ -224,6 +222,16 @@ def test_cargo():
         "fe61a8b85feab1963ee1985bf0e4791fdd354aa5",
     )
     assert get_files_loc_stat(output) == (9, 222, 171)
+
+
+def test_source_target_file():
+    output = get_version_diff_stats(
+        CARGO,
+        "nix",
+        "0.22.2",
+        "0.23.0",
+    )
+    assert output.diff["CONVENTIONS.md"].target_file is None
 
 
 def test_sanitize_repo_url():

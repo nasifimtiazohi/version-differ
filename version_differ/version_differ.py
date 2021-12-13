@@ -36,16 +36,30 @@ class VersionDifferOutput:
         self.new_version_git_sha = None
         self.diff = None
 
-    def to_json(self):
-        return {
-            "metadata_info": {
-                "old_version": self.old_version,
-                "old_version_git_sha": self.old_version_git_sha,
-                "new_version": self.new_version,
-                "new_version_git_sha": self.new_version_git_sha,
-            },
-            "diff": self.diff,
-        }
+    # TODO: convert to JSON for cli output
+    # def to_json(self):
+    #     return {
+    #         "metadata_info": {
+    #             "old_version": self.old_version,
+    #             "old_version_git_sha": self.old_version_git_sha,
+    #             "new_version": self.new_version,
+    #             "new_version_git_sha": self.new_version_git_sha,
+    #         },
+    #         "diff": self.diff,
+    #     }
+
+
+class FileDiff:
+    def __init__(self, source_file, target_file, is_rename, loc_added, loc_removed, added_lines, removed_lines):
+        self.source_file = source_file
+        self.target_file = target_file
+        self.is_rename = is_rename
+        self.loc_added = loc_added
+        self.loc_removed = loc_removed
+        self.added_lines = added_lines
+        self.removed_lines = removed_lines
+
+    # TODO: convert to json for cli output
 
 
 def sanitize_repo_url(repo_url):
@@ -162,7 +176,7 @@ def get_version_diff_stats(ecosystem, package, old, new, repo_url=None):
     else:
         output = get_version_diff_stats_registry(ecosystem, package, old, new)
 
-    return output.to_json()
+    return output
 
 
 def get_git_sha_from_cargo_crate(package_path):
@@ -379,6 +393,14 @@ def setup_remote(repo, url):
     remote.fetch()
 
 
+def process_patch_filepath(filepath):
+    filepath = filepath.removeprefix("a/")
+    filepath = filepath.removeprefix("b/")
+    if filepath == "/dev/null":
+        filepath = None
+    return filepath
+
+
 def get_diff_stats_from_git_diff(uni_diff_text):
     patch_set = PatchSet(uni_diff_text)
 
@@ -387,24 +409,26 @@ def get_diff_stats_from_git_diff(uni_diff_text):
     for patched_file in patch_set:
         file_path = patched_file.path  # file name
 
-        ad_line = [
+        ad_lines = [
             line.value for hunk in patched_file for line in hunk if line.is_added and line.value.strip() != ""
         ]  # the row number of deleted lines
-        lines_added = len(ad_line)
+        lines_added = len(ad_lines)
 
-        del_line = [
+        del_lines = [
             line.value for hunk in patched_file for line in hunk if line.is_removed and line.value.strip() != ""
         ]  # the row number of added liens
-        lines_removed = len(del_line)
+        lines_removed = len(del_lines)
 
-        loc_change = lines_added + lines_removed
-        if loc_change > 0:
-            files[file_path] = {
-                "loc_added": lines_added,
-                "loc_removed": lines_removed,
-                "added_lines": ad_line,
-                "deleted_lines": del_line,
-            }
+        if lines_added + lines_removed > 0:
+            files[file_path] = FileDiff(
+                process_patch_filepath(patched_file.source_file),
+                process_patch_filepath(patched_file.target_file),
+                patched_file.is_rename,
+                lines_added,
+                lines_removed,
+                ad_lines,
+                del_lines,
+            )
 
     return files
 
