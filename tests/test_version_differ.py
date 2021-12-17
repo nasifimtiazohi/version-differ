@@ -2,9 +2,6 @@
 
 """Tests for `version_differ` package."""
 
-from requests import NullHandler
-from requests.api import get
-import pytest
 import tempfile
 from git import Repo
 from pygit2 import clone_repository

@@ -1,6 +1,5 @@
 """Main module."""
 
-from git.exc import CacheError
 import requests
 import json
 import os
