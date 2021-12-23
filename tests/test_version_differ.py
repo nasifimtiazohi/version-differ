@@ -8,6 +8,7 @@ from pygit2 import clone_repository
 
 
 from version_differ.version_differ import *
+from version_differ.download import *
 
 
 def test_src_download_url():
