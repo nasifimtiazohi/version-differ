@@ -52,6 +52,28 @@ def test_get_commit_of_release():
     assert get_commit_of_release(tags, package, "10.0.8-") is None
     assert get_commit_of_release(tags, "hakari", "0.3.0").hexsha == "946ddf053582067b843c19f1270fe92eaa0a7cb3"
 
+    temp_dir = tempfile.TemporaryDirectory()
+    url = "https://github.com/rayon-rs/rayon"
+    clone_repository(url, temp_dir.name)
+
+    repo = Repo(temp_dir.name)
+    tags = repo.tags
+    assert get_commit_of_release(tags, "rayon", "1.5.0") is None
+    get_commit_of_release(tags, "rayon-core", "1.5.0") == "b8b97a17bc4cbef89807444566eee7cdc523b7d1"
+
+    temp_dir = tempfile.TemporaryDirectory()
+    url = "https://github.com/tokio-rs/tokio"
+    clone_repository(url, temp_dir.name)
+
+    repo = Repo(temp_dir.name)
+    tags = repo.tags
+    assert get_commit_of_release(tags, "tokio", "1.5.0").hexsha == "a5ee2f0d3d78daa01e2c6c12d22b82474dc5c32a"
+    assert get_commit_of_release(tags, "tokio-macros", "1.5.0").hexsha == "bb6a292d0a7f4fdd18f723a882b2ed04c17c42d7"
+    assert get_commit_of_release(tags, "tokio-util", "1.5.0") is None
+
+    assert get_commit_of_release(tags, "tokio-uds", "0.2.0").hexsha == "06325fa63b456069a7003b4fbf2dc1ac980c9a44"
+    assert get_commit_of_release(tags, "tokio-tls", "0.2.0").hexsha == "89d6bfc5cb431686d59b6659c6aa0a8531a87dff"
+
 
 def test_get_go_module_path():
     assert get_go_module_path("github.com/keybase/client/go/chat/attachments") == "go/chat/attachments"

@@ -1,6 +1,5 @@
 """Main module."""
 
-import requests
 import json
 from pygit2 import init_repository, Signature
 from time import time
@@ -77,20 +76,18 @@ def get_commit_of_release(tags, package, version):
 
     # Now we check through a series of heuristics if tag matches a version
     version_formatted_for_regex = version.strip().replace(".", "\\.")
+    package = package.lower()
     patterns = [
         # 1. Ensure the version part does not follow any digit between 1-9,
         # e.g., to distinguish betn 0.1.8 vs 10.1.8
         r"^(?:.*[^1-9])?{}$".format(version_formatted_for_regex),
-        # 2. If still more than one candidate,
-        # check the extistence of crate name
-        r"^.*{}(?:.*[^1-9])?{}$".format(package, version_formatted_for_regex),
-        # 3. check if and only if crate name and version string is present
+        # 2. check if and only if crate name and version string is present
         # besides non-alphanumeric, e.g., to distinguish guppy vs guppy-summaries
-        r"^.*{}\W*{}$".format(package, version_formatted_for_regex),
+        r"^.*{}\W*v?\W*{}$".format(package, version_formatted_for_regex),
     ]
 
     for pattern in patterns:
-        tags = list(filter(lambda tag: re.compile(pattern).match(tag.name.strip()), tags))
+        tags = list(filter(lambda tag: re.compile(pattern).match(tag.name.strip().lower()), tags))
         if len(tags) == 1:
             return tags[0].commit
 
