@@ -5,7 +5,7 @@ from rich import traceback
 
 
 @click.command()
-@click.version_option(version="0.3.2", message=click.style("version-differ Version: 0.3.2"))
+@click.version_option(version="0.3.3", message=click.style("version-differ Version: 0.3.3"))
 def main() -> None:
     """version-differ."""
 
