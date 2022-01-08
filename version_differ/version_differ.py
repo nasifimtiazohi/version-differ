@@ -8,8 +8,8 @@ from git import Repo
 import re
 from unidiff import PatchSet
 from urllib.parse import urlparse, parse_qs
-from os.path import join
-
+from os.path import join, relpath
+import os
 from version_differ.download import download_package_source, get_package_version_source_url
 from version_differ.common import *
 
@@ -20,19 +20,24 @@ class VersionDifferOutput:
         self.old_version_git_sha = None
         self.new_version = None
         self.new_version_git_sha = None
+
         self.diff = None
 
-    # TODO: convert to JSON for cli output
-    # def to_json(self):
-    #     return {
-    #         "metadata_info": {
-    #             "old_version": self.old_version,
-    #             "old_version_git_sha": self.old_version_git_sha,
-    #             "new_version": self.new_version,
-    #             "new_version_git_sha": self.new_version_git_sha,
-    #         },
-    #         "diff": self.diff,
-    #     }
+        self.new_version_filelist = None
+        self.old_version_filelist = None
+
+    def to_json(self):
+        return {
+            "metadata_info": {
+                "old_version": self.old_version,
+                "old_version_git_sha": self.old_version_git_sha,
+                "new_version": self.new_version,
+                "new_version_git_sha": self.new_version_git_sha,
+            },
+            "diff": self.diff,
+            "new_version_filelist": self.new_version_filelist,
+            "old_version_filelist": self.old_version_filelist,
+        }
 
 
 class FileDiff:
@@ -103,20 +108,22 @@ def get_version_diff_stats_from_repository_tags(package, repo_url, old, new):
     output.new_version = new
 
     url = sanitize_repo_url(repo_url)
-    temp_dir = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(url, temp_dir.name)
-    tags = repo.tags
+    with tempfile.TemporaryDirectory() as temp_dir:
+        repo = Repo.clone_from(url, temp_dir)
+        tags = repo.tags
 
-    old_commit = get_commit_of_release(tags, package, old)
-    new_commit = get_commit_of_release(tags, package, new)
+        old_commit = get_commit_of_release(tags, package, old)
+        new_commit = get_commit_of_release(tags, package, new)
 
-    if old_commit and new_commit:
+        if old_commit and new_commit:
 
-        output.old_version_git_sha = old_commit
-        output.new_version_git_sha = new_commit
-        output.diff = get_diff_stats(temp_dir.name, old_commit, new_commit)
+            output.old_version_git_sha = old_commit
+            output.new_version_git_sha = new_commit
+            output.diff = get_diff_stats(temp_dir, old_commit, new_commit)
 
-    temp_dir.cleanup()
+            output.new_version_filelist = get_repository_file_list(temp_dir, new_commit)
+            output.old_version_filelist = get_repository_file_list(temp_dir, old_commit)
+
     return output
 
 
@@ -177,35 +184,34 @@ def get_version_diff_stats_registry(ecosystem, package, old, new):
     output.old_version = old
     output.new_version = new
 
-    temp_dir_old = tempfile.TemporaryDirectory()
-    url = get_package_version_source_url(ecosystem, package, old)
-    if url:
-        old_path = download_package_source(url, ecosystem, package, old, temp_dir_old.name)
-        # currently only cargo provides git sha
-        if ecosystem == CARGO:
-            output.old_version_git_sha = get_git_sha_from_cargo_crate(old_path)
-    else:
-        return output
+    with tempfile.TemporaryDirectory() as temp_dir_old, tempfile.TemporaryDirectory() as temp_dir_new:
+        url = get_package_version_source_url(ecosystem, package, old)
+        if url:
+            old_path = download_package_source(url, ecosystem, package, old, temp_dir_old)
+            # currently only cargo provides git sha
+            if ecosystem == CARGO:
+                output.old_version_git_sha = get_git_sha_from_cargo_crate(old_path)
+        else:
+            return output
 
-    temp_dir_new = tempfile.TemporaryDirectory()
-    url = get_package_version_source_url(ecosystem, package, new)
-    if url:
-        new_path = download_package_source(url, ecosystem, package, new, temp_dir_new.name)
-        # currently only cargo provides git sha
-        if ecosystem == CARGO:
-            output.new_version_git_sha = get_git_sha_from_cargo_crate(new_path)
-    else:
-        return output
+        url = get_package_version_source_url(ecosystem, package, new)
+        if url:
+            new_path = download_package_source(url, ecosystem, package, new, temp_dir_new)
+            # currently only cargo provides git sha
+            if ecosystem == CARGO:
+                output.new_version_git_sha = get_git_sha_from_cargo_crate(new_path)
+        else:
+            return output
 
-    repo_old, oid_old = init_git_repo(old_path)
-    repo_new, oid_new = init_git_repo(new_path)
+        repo_old, oid_old = init_git_repo(old_path)
+        repo_new, oid_new = init_git_repo(new_path)
 
-    setup_remote(repo_old, new_path)
+        setup_remote(repo_old, new_path)
 
-    output.diff = get_diff_stats(old_path, oid_old, oid_new)
+        output.diff = get_diff_stats(old_path, oid_old, oid_new)
 
-    temp_dir_old.cleanup()
-    temp_dir_new.cleanup()
+        output.new_version_filelist = get_repository_file_list(new_path, oid_new)
+        output.old_version_filelist = get_repository_file_list(old_path, oid_old)
 
     return output
 
@@ -274,3 +280,18 @@ def get_diff_stats(repo_path, commit_a, commit_b):
     uni_diff_text = repository.git.diff(str(commit_a), str(commit_b), ignore_blank_lines=True, ignore_space_at_eol=True)
 
     return get_diff_stats_from_git_diff(uni_diff_text)
+
+
+def get_repository_file_list(repo_path, commit):
+    repo = Repo(repo_path)
+    head = repo.head.object.hexsha
+
+    repo.git.checkout(commit, force=True)
+    filelist = []
+    for root, dirs, files in os.walk(repo_path):
+        for file in files:
+            if not relpath(root, repo_path).startswith(".git"):
+                filelist.append(relpath(join(root, file), repo_path))
+
+    repo.git.checkout(head, force=True)
+    return set(filelist)

@@ -174,17 +174,15 @@ def test_maven():
 def test_npm():
     assert get_files_loc_stat(get_version_diff_stats(NPM, "lodash", "4.11.0", "4.11.1")) == (12, 54, 44)
 
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                NPM,
-                "set-value",
-                "3.0.0",
-                "3.0.1",
-            )
-        )
-        == (4, 23, 25)
+    output = get_version_diff_stats(
+        NPM,
+        "set-value",
+        "3.0.0",
+        "3.0.1",
     )
+    assert get_files_loc_stat(output) == (4, 23, 25)
+
+    assert len(output.new_version_filelist) == 4
 
 
 def test_nuget():
@@ -221,6 +219,10 @@ def test_pip():
     assert get_files_loc_stat(get_version_diff_stats(PIP, "django", "3.1.6", "3.1.7")) == (3, 5, 2)
 
     assert get_files_loc_stat(get_version_diff_stats(PIP, "azure-storage-blob", "12.8.0", "12.8.1")) == (24, 773, 457)
+
+    output = get_version_diff_stats(PIP, "numpy", "1.21.4", "1.21.5")
+    assert get_files_loc_stat(output) == (14, 208, 55)
+    assert len(output.new_version_filelist) == 706
 
 
 def test_rubygems():
@@ -263,3 +265,8 @@ def test_sanitize_repo_url():
         sanitize_repo_url("https://gitlab.com/gitlab-org/charts/gitlab/-/tree/master/doc/architecture")
         == "https://gitlab.com/gitlab-org/charts"
     )
+
+
+def test_numpy():
+    output = get_version_diff_stats(PIP, "numpy", "1.10.0", "1.21.5")
+    print(output.diff.keys())
