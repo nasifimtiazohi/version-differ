@@ -231,6 +231,8 @@ def test_rubygems():
 
     assert get_files_loc_stat(get_version_diff_stats(RUBYGEMS, "bundler", "2.2.31", "2.2.32")) == (7, 45, 70)
 
+    assert get_files_loc_stat(get_version_diff_stats(RUBYGEMS, "excon", "0.9.5", "0.9.6")) == (12, 132, 37)
+
 
 def test_cargo():
     output = get_version_diff_stats(

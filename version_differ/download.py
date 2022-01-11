@@ -130,8 +130,9 @@ def download_tar(url, path):
         t.close()
         os.remove(ruby_tar)
 
-        for gz_files in ["metadata.gz", "checksums.yaml.gz"]:
-            os.remove(join(path, gz_files))
+        for gz_file in ["metadata.gz", "checksums.yaml.gz"]:
+            if gz_file in os.listdir(path):
+                os.remove(join(path, gz_file))
 
 
 def get_maven_pacakge_url(package):
