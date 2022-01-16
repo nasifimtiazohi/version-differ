@@ -130,7 +130,13 @@ def download_tar(url, path):
         t.close()
         os.remove(ruby_tar)
 
-        for gz_file in ["metadata.gz", "checksums.yaml.gz"]:
+        for gz_file in [
+            "metadata.gz",
+            "checksums.yaml.gz",
+            "data.tar.gz.sig",
+            "metadata.gz.sig",
+            "checksums.yaml.gz.sig",
+        ]:
             if gz_file in os.listdir(path):
                 os.remove(join(path, gz_file))
 
