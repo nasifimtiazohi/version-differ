@@ -275,3 +275,8 @@ def test_sanitize_repo_url():
 def test_numpy():
     output = get_version_diff_stats(PIP, "numpy", "1.10.0", "1.21.5")
     print(output.diff.keys())
+
+
+def test_clap():
+    output = get_version_diff_stats(CARGO, "clap", "2.33.4", "2.34.0")
+    assert "Cargo.toml.orig" in output.diff
