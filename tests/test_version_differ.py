@@ -279,4 +279,11 @@ def test_numpy():
 
 def test_clap():
     output = get_version_diff_stats(CARGO, "clap", "2.33.4", "2.34.0")
-    assert "Cargo.toml.orig" in output.diff
+    assert CARGO_TOML_ORIG_TXT not in output.diff
+    assert CARGO_TOML_ORIG in output.diff
+
+    assert CARGO_TOML_ORIG_TXT not in output.new_version_filelist
+    assert CARGO_TOML_ORIG in output.new_version_filelist
+
+    assert CARGO_TOML_ORIG_TXT not in output.old_version_filelist
+    assert CARGO_TOML_ORIG in output.old_version_filelist

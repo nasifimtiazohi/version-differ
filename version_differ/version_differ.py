@@ -169,9 +169,17 @@ def get_version_diff_stats(ecosystem, package, old, new, repo_url=None):
         output.diff = filter_nuget_package_files(package, output.diff)
     else:
         output = get_version_diff_stats_registry(ecosystem, package, old, new)
-        if ecosystem == CARGO and CARGO_TOML_ORIG_TXT in output.diff:
-            output.diff[CARGO_TOML_ORIG] = output.diff[CARGO_TOML_ORIG_TXT]
-            output.diff.pop(CARGO_TOML_ORIG_TXT)
+
+        if ecosystem == CARGO:
+            if CARGO_TOML_ORIG_TXT in output.diff:
+                output.diff[CARGO_TOML_ORIG] = output.diff[CARGO_TOML_ORIG_TXT]
+                output.diff.pop(CARGO_TOML_ORIG_TXT)
+            if CARGO_TOML_ORIG_TXT in output.old_version_filelist:
+                output.old_version_filelist.discard(CARGO_TOML_ORIG_TXT)
+                output.old_version_filelist.add(CARGO_TOML_ORIG)
+            if CARGO_TOML_ORIG_TXT in output.new_version_filelist:
+                output.new_version_filelist.discard(CARGO_TOML_ORIG_TXT)
+                output.new_version_filelist.add(CARGO_TOML_ORIG)
 
     return output
 
