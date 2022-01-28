@@ -287,3 +287,11 @@ def test_clap():
 
     assert CARGO_TOML_ORIG_TXT not in output.old_version_filelist
     assert CARGO_TOML_ORIG in output.old_version_filelist
+
+
+def test_pycparser():
+    output = get_version_diff_stats(PYPI, "pycparser", "2.11", "2.12")
+    assert len(output.diff) == 8
+
+    assert not any("egg-info" in x for x in output.new_version_filelist)
+    assert not any("PKG-INFO" in x for x in output.new_version_filelist)

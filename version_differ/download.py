@@ -35,6 +35,13 @@ def download_package_source(url, ecosystem, package, version, dir_path):
         if len(files) == 1:
             # for tar.gz extractions
             path = "{}/{}".format(dir_path, files[0])
+            files = os.listdir(path)
+            egginfo = "{}.egg-info".format(package)
+            if egginfo in files:
+                shutil.rmtree(join(path, egginfo), ignore_errors=True)
+            pkginfo = "PKG-INFO"
+            if pkginfo in files:
+                os.remove(join(path, pkginfo))
         else:
             # assuming wheel file
             distinfo = None
