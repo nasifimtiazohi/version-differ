@@ -307,3 +307,7 @@ def test_pip2():
     output = get_version_diff_stats(PYPI, "bitarray", "2.3.3", "2.3.4")
     assert not any("egg-info" in x for x in output.new_version_filelist)
     assert not any("PKG-INFO" in x for x in output.new_version_filelist)
+
+    output = get_version_diff_stats(PYPI, "paho-mqtt", "1.2.2", "1.2.3")
+    assert not any("egg-info" in x for x in output.new_version_filelist)
+    assert not any("PKG-INFO" in x for x in output.new_version_filelist)
