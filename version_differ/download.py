@@ -1,3 +1,4 @@
+from struct import pack
 from version_differ.common import *
 import requests
 import json
@@ -7,6 +8,13 @@ from zipfile import ZipFile
 import tarfile
 from os.path import join
 import shutil
+
+
+def get_egg_info_path(path, package):
+    for root, dirs, files in os.walk(path):
+        for dir in dirs:
+            if dir == "{}.egg-info".format(package.replace("-", "_")):
+                return join(path, join(root, dir))
 
 
 def download_package_source(url, ecosystem, package, version, dir_path):
@@ -36,9 +44,12 @@ def download_package_source(url, ecosystem, package, version, dir_path):
             # for tar.gz extractions
             path = "{}/{}".format(dir_path, files[0])
             files = os.listdir(path)
-            egginfo = "{}.egg-info".format(package)
-            if egginfo in files:
-                shutil.rmtree(join(path, egginfo), ignore_errors=True)
+
+            # if egg built
+            egginfo = get_egg_info_path(path, package)
+            if egginfo:
+                shutil.rmtree(egginfo, ignore_errors=True)
+
             pkginfo = "PKG-INFO"
             if pkginfo in files:
                 os.remove(join(path, pkginfo))
