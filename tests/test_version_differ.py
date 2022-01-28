@@ -214,7 +214,7 @@ def test_nuget():
 
 
 def test_pip():
-    assert get_files_loc_stat(get_version_diff_stats(PIP, "meinheld", "1.0.1", "1.0.2")) == (43, 6091, 6380)
+    assert get_files_loc_stat(get_version_diff_stats(PIP, "meinheld", "1.0.1", "1.0.2")) == (41, 6061, 6350)
 
     assert get_files_loc_stat(get_version_diff_stats(PIP, "django", "3.1.6", "3.1.7")) == (3, 5, 2)
 
