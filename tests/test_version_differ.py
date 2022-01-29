@@ -5,7 +5,7 @@
 import tempfile
 from git import Repo
 from pygit2 import clone_repository
-
+import pytest
 
 from version_differ.version_differ import *
 from version_differ.download import *
@@ -311,3 +311,16 @@ def test_pip2():
     output = get_version_diff_stats(PYPI, "paho-mqtt", "1.2.2", "1.2.3")
     assert not any("egg-info" in x for x in output.new_version_filelist)
     assert not any("PKG-INFO" in x for x in output.new_version_filelist)
+
+
+@pytest.mark.skip(reason="expensive_clone")
+def test_azure_release_commit():
+    temp_dir = tempfile.TemporaryDirectory()
+    url = "https://github.com/Azure/azure-sdk-for-python"
+    package = "azure-mgmt-resource"
+    clone_repository(url, temp_dir.name)
+
+    repo = Repo(temp_dir.name)
+    tags = repo.tags
+
+    print(get_commit_of_release(tags, package, "13.0.0"))
