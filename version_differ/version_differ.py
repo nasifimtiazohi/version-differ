@@ -91,7 +91,7 @@ def get_commit_of_release(tags, package, version):
         r"^(?:.*[^1-9])?{}$".format(version_formatted_for_regex),
         # 2. check if and only if crate name and version string is present
         # besides non-alphanumeric, e.g., to distinguish guppy vs guppy-summaries
-        r"^.*{}\W*v?\W*{}$".format(package, version_formatted_for_regex),
+        r"^.*{}\W*-?_?v?-?_?\W*{}$".format(package, version_formatted_for_regex),
     ]
 
     for pattern in patterns:
