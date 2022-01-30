@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "version-differ"
-version = "0.3.11"  # <<COOKIETEMPLE_FORCE_BUMP>>
+version = "0.3.12"  # <<COOKIETEMPLE_FORCE_BUMP>>
 description = "Accurate diffing between two versions of a project"
 authors = ["Nasif Imtiaz <nasifimtiaz88@gmail.com>"]
 license = "MIT"
