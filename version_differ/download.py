@@ -1,4 +1,3 @@
-from struct import pack
 from version_differ.common import *
 import requests
 import json
@@ -8,6 +7,10 @@ from zipfile import ZipFile
 import tarfile
 from os.path import join
 import shutil
+
+
+CARGO_TOML_ORIG = "Cargo.toml.orig"
+CARGO_TOML = "Cargo.toml"
 
 
 def get_egg_info_path(path, package):
@@ -38,6 +41,10 @@ def download_package_source(url, ecosystem, package, version, dir_path):
         files = os.listdir(dir_path)
         assert len(files) == 1
         path = "{}/{}".format(dir_path, files[0])
+        if ecosystem == CARGO:
+            if CARGO_TOML in os.listdir(path) and CARGO_TOML_ORIG in os.listdir(path):
+                os.remove(join(path, CARGO_TOML))
+                os.rename(join(path, CARGO_TOML_ORIG), join(path, CARGO_TOML))
     elif ecosystem == PIP:
         files = os.listdir(dir_path)
         if len(files) == 1:

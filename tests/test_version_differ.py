@@ -248,7 +248,15 @@ def test_cargo():
         "d11084663f5c6757f0882f938a0c6a204996a1c4",
         "fe61a8b85feab1963ee1985bf0e4791fdd354aa5",
     )
-    assert get_files_loc_stat(output) == (9, 222, 171)
+    assert get_files_loc_stat(output) == (8, 214, 163)
+
+    output = get_version_diff_stats(CARGO, "clap", "2.33.4", "2.34.0")
+    assert CARGO_TOML_ORIG not in output.diff
+    assert CARGO_TOML_ORIG not in output.new_version_filelist
+    assert CARGO_TOML_ORIG not in output.old_version_filelist
+
+    output = get_version_diff_stats(CARGO, "clear_on_drop", "0.2.1", "0.2.2")
+    assert get_files_loc_stat(output) == (6, 117, 49)
 
 
 def test_source_target_file():
@@ -275,18 +283,6 @@ def test_sanitize_repo_url():
 def test_numpy():
     output = get_version_diff_stats(PIP, "numpy", "1.10.0", "1.21.5")
     print(output.diff.keys())
-
-
-def test_clap():
-    output = get_version_diff_stats(CARGO, "clap", "2.33.4", "2.34.0")
-    assert CARGO_TOML_ORIG_TXT not in output.diff
-    assert CARGO_TOML_ORIG in output.diff
-
-    assert CARGO_TOML_ORIG_TXT not in output.new_version_filelist
-    assert CARGO_TOML_ORIG in output.new_version_filelist
-
-    assert CARGO_TOML_ORIG_TXT not in output.old_version_filelist
-    assert CARGO_TOML_ORIG in output.old_version_filelist
 
 
 def test_pip2():

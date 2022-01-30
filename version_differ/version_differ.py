@@ -13,9 +13,6 @@ import os
 from version_differ.download import download_package_source, get_package_version_source_url
 from version_differ.common import *
 
-CARGO_TOML_ORIG = "Cargo.toml.orig"
-CARGO_TOML_ORIG_TXT = "Cargo.toml.orig.txt"
-
 
 class VersionDifferOutput:
     def __init__(self):
@@ -92,6 +89,7 @@ def get_commit_of_release(tags, package, version):
         # 2. check if and only if crate name and version string is present
         # besides non-alphanumeric, e.g., to distinguish guppy vs guppy-summaries
         r"^.*{}\W*-?_?v?-?_?\W*{}$".format(package, version_formatted_for_regex),
+        r"^.*{}\W*-?_?v?-?_?\W*{}$".format(version_formatted_for_regex, package),
     ]
 
     for pattern in patterns:
@@ -170,17 +168,6 @@ def get_version_diff_stats(ecosystem, package, old, new, repo_url=None):
     else:
         output = get_version_diff_stats_registry(ecosystem, package, old, new)
 
-        if ecosystem == CARGO:
-            if CARGO_TOML_ORIG_TXT in output.diff:
-                output.diff[CARGO_TOML_ORIG] = output.diff[CARGO_TOML_ORIG_TXT]
-                output.diff.pop(CARGO_TOML_ORIG_TXT)
-            if CARGO_TOML_ORIG_TXT in output.old_version_filelist:
-                output.old_version_filelist.discard(CARGO_TOML_ORIG_TXT)
-                output.old_version_filelist.add(CARGO_TOML_ORIG)
-            if CARGO_TOML_ORIG_TXT in output.new_version_filelist:
-                output.new_version_filelist.discard(CARGO_TOML_ORIG_TXT)
-                output.new_version_filelist.add(CARGO_TOML_ORIG)
-
     return output
 
 
@@ -206,8 +193,6 @@ def get_version_diff_stats_registry(ecosystem, package, old, new):
             if ecosystem == CARGO:
                 output.old_version_git_sha = get_git_sha_from_cargo_crate(old_path)
 
-                if CARGO_TOML_ORIG in os.listdir(old_path):
-                    os.rename(join(old_path, CARGO_TOML_ORIG), join(old_path, CARGO_TOML_ORIG_TXT))
         else:
             return output
 
@@ -217,9 +202,6 @@ def get_version_diff_stats_registry(ecosystem, package, old, new):
             # currently only cargo provides git sha
             if ecosystem == CARGO:
                 output.new_version_git_sha = get_git_sha_from_cargo_crate(new_path)
-
-                if CARGO_TOML_ORIG in os.listdir(new_path):
-                    os.rename(join(new_path, CARGO_TOML_ORIG), join(new_path, CARGO_TOML_ORIG_TXT))
         else:
             return output
 
