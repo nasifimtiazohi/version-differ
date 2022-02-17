@@ -220,10 +220,6 @@ def test_pip():
 
     assert get_files_loc_stat(get_version_diff_stats(PIP, "azure-storage-blob", "12.8.0", "12.8.1")) == (24, 773, 457)
 
-    output = get_version_diff_stats(PIP, "numpy", "1.21.4", "1.21.5")
-    assert get_files_loc_stat(output) == (14, 208, 55)
-    assert len(output.new_version_filelist) == 706
-
 
 def test_rubygems():
     # in below example, auto-generated file spec/example.txt causes a large diff
@@ -320,3 +316,10 @@ def test_azure_release_commit():
     tags = repo.tags
 
     print(get_commit_of_release(tags, package, "13.0.0"))
+
+
+def test_path():
+    old, new, output = get_package_code_and_version_diff_stats_registry(PIP, "numpy", "1.21.4", "1.21.5")
+    assert len(os.listdir(new.name)) == 2
+    assert get_files_loc_stat(output) == (14, 208, 55)
+    assert len(output.new_version_filelist) == 706

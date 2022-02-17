@@ -218,6 +218,46 @@ def get_version_diff_stats_registry(ecosystem, package, old, new):
     return output
 
 
+def get_package_code_and_version_diff_stats_registry(ecosystem, package, old, new):
+    output = VersionDifferOutput()
+    output.old_version = old
+    output.new_version = new
+
+    temp_dir_old = tempfile.TemporaryDirectory()
+    temp_dir_new = tempfile.TemporaryDirectory()
+
+    url = get_package_version_source_url(ecosystem, package, old)
+    if url:
+        old_path = download_package_source(url, ecosystem, package, old, temp_dir_old.name)
+        # currently only cargo provides git sha
+        if ecosystem == CARGO:
+            output.old_version_git_sha = get_git_sha_from_cargo_crate(old_path)
+
+    else:
+        return output
+
+    url = get_package_version_source_url(ecosystem, package, new)
+    if url:
+        new_path = download_package_source(url, ecosystem, package, new, temp_dir_new.name)
+        # currently only cargo provides git sha
+        if ecosystem == CARGO:
+            output.new_version_git_sha = get_git_sha_from_cargo_crate(new_path)
+    else:
+        return output
+
+    repo_old, oid_old = init_git_repo(old_path)
+    repo_new, oid_new = init_git_repo(new_path)
+
+    setup_remote(repo_old, new_path)
+
+    output.diff = get_diff_stats(old_path, oid_old, oid_new)
+
+    output.new_version_filelist = get_repository_file_list(new_path, oid_new)
+    output.old_version_filelist = get_repository_file_list(old_path, oid_old)
+
+    return temp_dir_old, temp_dir_new, output
+
+
 def init_git_repo(path):
     repo = init_repository(path)
     index = repo.index
@@ -251,7 +291,6 @@ def get_diff_stats_from_git_diff(uni_diff_text):
 
     for patched_file in patch_set:
         file_path = patched_file.path  # file name
-
         ad_lines = [
             line.value for hunk in patched_file for line in hunk if line.is_added and line.value.strip() != ""
         ]  # the row number of deleted lines
