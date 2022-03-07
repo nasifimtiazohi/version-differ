@@ -26,6 +26,17 @@ class VersionDifferOutput:
         self.new_version_filelist = None
         self.old_version_filelist = None
 
+        self.old_version_dir: tempfile.tempdir = None
+        self.old_version_path: str = None
+        self.new_version_dir: tempfile.tempdir = None
+        self.new_version_path: str = None
+
+    def cleanup(self):
+        if self.new_version_dir:
+            self.new_version_dir.cleanup()
+        if self.old_version_dir:
+            self.old_version_dir.cleanup()
+
     def to_json(self):
         return {
             "metadata_info": {
@@ -218,7 +229,7 @@ def get_version_diff_stats_registry(ecosystem, package, old, new):
     return output
 
 
-def get_package_code_and_version_diff_stats_registry(ecosystem, package, old, new):
+def get_version_diff_stats_registry_with_package_code(ecosystem, package, old, new):
     output = VersionDifferOutput()
     output.old_version = old
     output.new_version = new
@@ -255,7 +266,12 @@ def get_package_code_and_version_diff_stats_registry(ecosystem, package, old, ne
     output.new_version_filelist = get_repository_file_list(new_path, oid_new)
     output.old_version_filelist = get_repository_file_list(old_path, oid_old)
 
-    return temp_dir_old, temp_dir_new, output
+    output.old_version_dir = temp_dir_old
+    output.old_version_path = old_path
+    output.new_version_dir = temp_dir_new
+    output.new_version_path = new_path
+
+    return output
 
 
 def init_git_repo(path):
