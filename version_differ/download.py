@@ -79,7 +79,7 @@ def download_package_source(url, ecosystem, package, version, dir_path):
     return path
 
 
-def get_package_version_source_url(ecosystem, package, version):
+def get_package_version_source_url(ecosystem, package, version, wheel=True):
     assert ecosystem in ecosystems
 
     if ecosystem == CARGO:
@@ -102,7 +102,10 @@ def get_package_version_source_url(ecosystem, package, version):
         data = {k[1:] if k.startswith("v") else k: v for k, v in data.items()}
         if version in data:
             data = data[version]
-            url = next((x["url"] for x in data if x["url"].endswith(".whl")), data[-1]["url"])
+            if wheel:
+                url = next((x["url"] for x in data if x["url"].endswith(".whl")), data[-1]["url"])
+            else:
+                url = next((x["url"] for x in data if x["url"].endswith(".tar.gz")), data[-1]["url"])
             return url
     elif ecosystem == RUBYGEMS:
         return "https://rubygems.org/downloads/{}-{}.gem".format(package, version)

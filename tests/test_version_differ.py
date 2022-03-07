@@ -82,31 +82,25 @@ def test_get_go_module_path():
 
 
 def test_go():
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                GO,
-                "github.com/labstack/echo/middleware",
-                "4.1.17",
-                "4.2.0",
-                "https://github.com/labstack/echo",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            GO,
+            "github.com/labstack/echo/middleware",
+            "4.1.17",
+            "4.2.0",
+            "https://github.com/labstack/echo",
         )
-        == (27, 2461, 234)
-    )
+    ) == (27, 2461, 234)
 
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                GO,
-                "github.com/crewjam/saml",
-                "0.4.2",
-                "0.4.3",
-                "https://github.com/crewjam/saml",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            GO,
+            "github.com/crewjam/saml",
+            "0.4.2",
+            "0.4.3",
+            "https://github.com/crewjam/saml",
         )
-        == (10, 179, 13)
-    )
+    ) == (10, 179, 13)
 
 
 def get_sha_stat(output):
@@ -132,43 +126,34 @@ def get_files_loc_stat(output):
 def test_composer():
     assert get_files_loc_stat(get_version_diff_stats(COMPOSER, "psr/log", "1.1.4", "2.0.0")) == (10, 56, 430)
 
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                COMPOSER,
-                "illuminate/auth",
-                "4.1.25",
-                "4.1.26",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            COMPOSER,
+            "illuminate/auth",
+            "4.1.25",
+            "4.1.26",
         )
-        == (6, 186, 13)
-    )
+    ) == (6, 186, 13)
 
 
 def test_maven():
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                MAVEN,
-                "com.github.junrar:junrar",
-                "1.0.0",
-                "1.0.1",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            MAVEN,
+            "com.github.junrar:junrar",
+            "1.0.0",
+            "1.0.1",
         )
-        == (8, 40, 125)
-    )
+    ) == (8, 40, 125)
 
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                MAVEN,
-                "org.togglz:togglz-console",
-                "2.9.3",
-                "2.9.4",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            MAVEN,
+            "org.togglz:togglz-console",
+            "2.9.3",
+            "2.9.4",
         )
-        == (8, 88, 2)
-    )
+    ) == (8, 88, 2)
 
 
 def test_npm():
@@ -186,31 +171,25 @@ def test_npm():
 
 
 def test_nuget():
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                NUGET,
-                "messagepack.immutablecollection",
-                "2.0.335",
-                "2.1.80",
-                "https://github.com/neuecc/MessagePack-CSharp",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            NUGET,
+            "messagepack.immutablecollection",
+            "2.0.335",
+            "2.1.80",
+            "https://github.com/neuecc/MessagePack-CSharp",
         )
-        == (1, 14, 6)
-    )
+    ) == (1, 14, 6)
 
-    assert (
-        get_files_loc_stat(
-            get_version_diff_stats(
-                NUGET,
-                "microsoft.aspnetcore.server.kestrel.core",
-                "2.0.2",
-                "2.0.3",
-                "https://github.com/aspnet/KestrelHttpServer",
-            )
+    assert get_files_loc_stat(
+        get_version_diff_stats(
+            NUGET,
+            "microsoft.aspnetcore.server.kestrel.core",
+            "2.0.2",
+            "2.0.3",
+            "https://github.com/aspnet/KestrelHttpServer",
         )
-        == (7, 89, 24)
-    )
+    ) == (7, 89, 24)
 
 
 def test_pip():
@@ -319,7 +298,16 @@ def test_azure_release_commit():
 
 
 def test_path():
-    old, new, output = get_package_code_and_version_diff_stats_registry(PIP, "numpy", "1.21.4", "1.21.5")
-    assert len(os.listdir(new.name)) == 2
+    output = get_version_diff_stats_registry_with_package_code(PIP, "numpy", "1.21.4", "1.21.5")
+    assert len(os.listdir(output.new_version_path)) == 2
     assert get_files_loc_stat(output) == (14, 208, 55)
     assert len(output.new_version_filelist) == 706
+    output.cleanup()
+
+
+def test_pypi_tar_gz():
+    url = get_package_version_source_url(PYPI, "brotlipy", "0.7.0", wheel=False)
+    assert (
+        url
+        == "https://files.pythonhosted.org/packages/d9/91/bc79b88590e4f662bd40a55a2b6beb0f15da4726732efec5aa5a3763d856/brotlipy-0.7.0.tar.gz"
+    )
